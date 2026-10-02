@@ -23,3 +23,9 @@ _raw_locations = os.environ.get("LOCATIONS", "Taganka")
 LOCATIONS = [x.strip() for x in _raw_locations.split(",") if x.strip()]
 
 DB_PATH = os.environ.get("DB_PATH", "wheel.db")
+
+# Необязательная выгрузка в Google Sheets — см. README, раздел
+# "Выгрузка в Google Sheets". Если не заданы — бот работает как раньше,
+# только через SQLite, без синхронизации.
+GOOGLE_SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "")

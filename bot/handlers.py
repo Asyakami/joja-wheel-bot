@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from . import config, db
+from . import config, db, sheets
 from .prizes import PRIZES, get_prize
 
 router = Router()
@@ -83,6 +83,7 @@ async def cb_spin_prize(callback: CallbackQuery):
         staff_tg_id=callback.from_user.id,
         staff_name=_display_name(callback.from_user),
     )
+    sheets.log_spin(spin, prize)
 
     if prize["kind"] == "none":
         text = (
@@ -128,6 +129,7 @@ async def cmd_redeem(message: Message):
     updated = db.redeem_spin(
         code, message.from_user.id, _display_name(message.from_user)
     )
+    sheets.log_redeem(updated)
     prize = get_prize(updated["prize_code"])
     await message.answer(
         f"✅ Погашено: {prize['desc'] if prize else updated['prize_code']}\n"

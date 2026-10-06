@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-from . import config, db
+from . import config, db, sheets
 from .handlers import router
 
 
@@ -21,6 +21,9 @@ async def main():
         )
 
     db.init_db()
+    # Подключаемся к Google Sheets и готовим структуру листов сразу при старте,
+    # чтобы первый /spin не ждал настройки таблицы.
+    await asyncio.to_thread(sheets.warmup)
 
     bot = Bot(
         token=config.BOT_TOKEN,

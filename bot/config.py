@@ -24,6 +24,13 @@ LOCATIONS = [x.strip() for x in _raw_locations.split(",") if x.strip()]
 
 DB_PATH = os.environ.get("DB_PATH", "wheel.db")
 
+# Смещение от UTC в часах для расчёта «сегодня» и сроков действия призов
+# (сервер на Railway живёт по UTC). Москва = 3.
+try:
+    TZ_OFFSET_HOURS = int(os.environ.get("TZ_OFFSET_HOURS", "3"))
+except ValueError:
+    TZ_OFFSET_HOURS = 3
+
 # Необязательная выгрузка в Google Sheets — см. README, раздел
 # "Выгрузка в Google Sheets". Если не заданы — бот работает как раньше,
 # только через SQLite, без синхронизации.

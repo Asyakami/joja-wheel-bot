@@ -48,8 +48,8 @@ PRIZES = [
         "label": "☀️ 10% на заказ до 11:00",
         "desc": "Скидка 10% на заказ при оформлении до 11:00.",
         "kind": "discount",
-        "valid_days": 0,
-        "multi_use": False,
+        "valid_days": 7,
+        "multi_use": True,
     },
     {
         "code": "NO_WIN",

@@ -131,7 +131,18 @@ def _setup_structure(spreadsheet, ws):
             }
         }
 
-    requests = [
+    # Формулы, записанные через API, разбираются по локали таблицы: при русской
+    # локали запятая — десятичный разделитель, и IF(...,...) даёт «синтаксическую
+    # ошибку». Фиксируем en_US (и часовой пояс, чтобы TODAY() совпадал с «сегодня»
+    # заведения), чтобы формулы считались одинаково при любых настройках аккаунта.
+    props = {"locale": "en_US"}
+    fields = "locale"
+    if config.TZ_OFFSET_HOURS == 3:
+        props["timeZone"] = "Europe/Moscow"
+        fields += ",timeZone"
+
+    requests = [{"updateSpreadsheetProperties": {"properties": props, "fields": fields}}]
+    requests += [
         {"deleteConditionalFormatRule": {"sheetId": sid, "index": 0}} for _ in range(n_rules)
     ]
     requests += [

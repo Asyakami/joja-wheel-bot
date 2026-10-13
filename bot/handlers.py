@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
 from datetime import date
 
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from . import config, db, sheets
@@ -271,3 +272,38 @@ async def cmd_unredeemed(message: Message):
         if len(expired) > 10:
             lines.append(f"…и ещё {len(expired) - 10} (полный список — в таблице, фильтр «Просрочен»).")
     await message.answer("\n".join(lines))
+
+
+# ---------- резервная копия базы (переезд на другой хостинг) ----------
+OWNER_IDS = config.ADMIN_IDS or {757696548}
+
+
+@router.message(Command("backup"))
+async def cmd_backup(message: Message):
+    if message.from_user.id not in OWNER_IDS:
+        return
+    if not os.path.exists(config.DB_PATH):
+        await message.answer("Файл базы не найден.")
+        return
+    with open(config.DB_PATH, "rb") as f:
+        data = f.read()
+    await message.answer_document(
+        BufferedInputFile(data, filename=os.path.basename(config.DB_PATH)),
+        caption="💾 Резервная копия базы. Чтобы восстановить — отправьте этот файл боту с подписью /restore",
+    )
+
+
+@router.message(F.document, F.caption.startswith("/restore"))
+async def cmd_restore(message: Message):
+    if message.from_user.id not in OWNER_IDS:
+        return
+    buf = await message.bot.download(message.document)
+    data = buf.read()
+    if not data.startswith(b"SQLite format 3"):
+        await message.answer("Это не файл базы SQLite.")
+        return
+    os.makedirs(os.path.dirname(config.DB_PATH) or ".", exist_ok=True)
+    with open(config.DB_PATH, "wb") as f:
+        f.write(data)
+    db.init_db()
+    await message.answer(f"✅ База восстановлена ({len(data) // 1024} КБ).")
